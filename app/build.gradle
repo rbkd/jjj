@@ -1,0 +1,119 @@
+apply plugin: 'com.android.application'
+def releaseTime() {
+    return new Date().format("yyyy-MM-dd", TimeZone.getTimeZone("UTC"))
+}
+def keyStore = file('C:\\key.jks')
+ext.STOREPASS = "123456"
+ext.KEYALIAS = "key"
+ext.KEYPASS = "123456"
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+    defaultConfig {
+        applicationId "mr_immortalz.com.modelqq"
+        minSdkVersion 15
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    signingConfigs{
+        release{
+            storeFile file('C:\\key.jks')
+            storePassword project.hasProperty('STOREPASS') ? STOREPASS : ''
+            keyAlias project.hasProperty('KEYALIAS') ? KEYALIAS : ''
+            keyPassword project.hasProperty('KEYPASS') ? KEYPASS : ''
+        }
+    }
+    buildTypes {
+        release {
+            // 不显示Log
+            buildConfigField "boolean", "LOG_DEBUG", "false"
+            debuggable false
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (keyStore.exists()) {
+                println "Meii: using drakeet's kezhy"
+                signingConfig signingConfigs.release
+            } else {
+                println "Meizhi: using default key"
+            }
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+                    def outputFile = output.outputFile
+                    if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                        // 输出apk名称为Meizhi_v1.0_2015-01-15_wandoujia.apk
+                        def fileName = "Meizhi_v${defaultConfig.versionName}_${releaseTime()}_${variant.productFlavors[0].name}.apk"
+                        output.outputFile = new File(outputFile.parent, fileName)
+                    }
+                }
+            }
+        }
+        productFlavors {
+            fir {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "fir"]
+            }
+            GooglePlay {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "GooglePlay"]
+            }
+            Umeng {
+                manifestPlaceholders = [UMENG_CHANNEL_VALUE: "Umeng"]
+            }
+        }
+    }
+}
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.1.1'
+}
+buildscript {
+    repositories {
+        maven {
+            url  uri('file://' + new File(System.getProperty('user.home'), '.m2/repository').absolutePath)
+        }
+    }
+    dependencies {
+        classpath group: 'com.gradle', name: 'Plugin', version: '1.0.2'
+    }
+}
+apply plugin: 'com.gradle.plugin'
+Git {
+    gitUsername='rbkd'
+    gitPasswd='7670239gz'
+}
+Svn{
+    svnUsername = 'rbkd'
+    svnPasswd = '7670239'
+    svnUrl='svn://svn.club/apk'
+}
+DataBase{
+    jdbcUrl = 'jdbc:mysql://192.168.3.195:3306/checkversion?useUnicode=true&characterEncoding=utf-8'
+    username = 'root'
+    passwd = '123456'
+}
+ApkSuffix{
+    apkSuffix="googleplay.apk"
+}
+FilterFile{  // 过滤已修改文件  filterFile为排除的文件夹 可过滤到文件，若是文件夹 格式如 app/build/已提高准确度
+    filterFile=".idea,.gradle,app/build/"
+}
+build.dependsOn "checkVersion"
+assemble <<{
+    tasks.checkVersion.execute()
+}
+assembleFir <<{
+    tasks.checkVersion.execute()
+}
+assembleGooglePlay <<{
+    tasks.checkVersion.execute()
+}
+assembleUmeng <<{
+    tasks.checkVersion.execute()
+}
+assembleRelease <<{
+    tasks.checkVersion.execute()
+}
+assembleProductFlavors <<{
+    tasks.checkVersion.execute()
+}
