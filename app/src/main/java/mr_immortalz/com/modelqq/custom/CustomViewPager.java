@@ -1,4 +1,4 @@
-package mr_immortalz.com.modelqq.custom;
+﻿package mr_immortalz.com.modelqq.custom;
 
 import android.content.Context;
 import android.support.v4.view.ViewPager;
@@ -34,7 +34,7 @@ public class CustomViewPager extends ViewPager{
                 x = ev.getX();
                 break;
             case MotionEvent.ACTION_UP:
-                //计算得到手指从按下到离开的滑动速度
+                //计算得到手指从按下到离开的滑hhj动速度
                 mSpeed = (x - LastX) * 1000 / (System.currentTimeMillis() - downTime);
                 break;
         }
